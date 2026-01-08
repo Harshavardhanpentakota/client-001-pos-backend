@@ -1,0 +1,20 @@
+name,description,isActive,displayOrder
+Milkshakes,Milk-based thick shakes,true,1
+Ice Teas,Flavored iced teas,true,2
+Tea,Hot tea varieties,true,3
+Sides,Snacks and sides,true,4
+Maggi,Maggi noodles varieties,true,5
+Coffee,Hot coffee beverages,true,6
+Frappes & Cold Coffee,Cold coffee and frappes,true,7
+Mojitos,Non-alcoholic mojitos,true,8
+Slushers,Fruit slush drinks,true,9
+Enchiladas,Enchiladas varieties,true,10
+Quesadilla,Quesadilla varieties,true,11
+Sandwiches,Grilled and club sandwiches,true,12
+Pasta,Pasta dishes,true,13
+Desserts,Sweet dessert items,true,14
+Appetizers,Starters and appetizers,true,15
+Pizza,Pizza varieties,true,16
+Burgers,Burger varieties,true,17
+Salads,Healthy salad options,true,18
+Add-ons,Extra toppings and add-ons,true,19

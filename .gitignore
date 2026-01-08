@@ -1,0 +1,11 @@
+node_modules/
+.env
+*.log
+.DS_Store
+coverage/
+dist/
+build/
+
+# Uploaded images (but keep the directory structure)
+public/images/*
+!public/images/.gitkeep
