@@ -1,25 +1,79 @@
 const mongoose = require('mongoose');
 
 const settingsSchema = new mongoose.Schema({
-  cafeName: {
-    type: String,
-    default: 'My Café'
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+    unique: true
   },
-  address: {
+  businessName: {
     type: String,
-    default: ''
-  },
-  phone: {
-    type: String,
-    default: ''
+    required: true,
+    trim: true,
+    minlength: [2, 'Business name must be at least 2 characters'],
+    maxlength: [100, 'Business name cannot exceed 100 characters'],
+    default: 'My Business'
   },
   email: {
     type: String,
-    match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Please provide a valid email'
-    ],
-    default: 'info@cafe.com'
+    required: true,
+    lowercase: true,
+    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email'],
+    default: 'info@business.com'
+  },
+  phone: {
+    type: String,
+    required: true,
+    trim: true,
+    default: ''
+  },
+  address: {
+    type: String,
+    required: true,
+    minlength: [10, 'Address must be at least 10 characters'],
+    default: ''
+  },
+  gstNumber: {
+    type: String,
+    trim: true,
+    uppercase: true,
+    match: [/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/, 'Invalid GST number format'],
+    default: null
+  },
+  logo: {
+    type: String,
+    default: null
+  },
+  enableGst: {
+    type: Boolean,
+    default: false
+  },
+  sgstRate: {
+    type: Number,
+    min: [0, 'SGST rate cannot be negative'],
+    max: [100, 'SGST rate cannot exceed 100'],
+    default: 2.5
+  },
+  cgstRate: {
+    type: Number,
+    min: [0, 'CGST rate cannot be negative'],
+    max: [100, 'CGST rate cannot exceed 100'],
+    default: 2.5
+  },
+  planType: {
+    type: String,
+    enum: ['free', 'premium', 'enterprise'],
+    default: 'free'
+  },
+  planValidity: {
+    type: Date,
+    default: null
+  },
+  // Legacy fields for backward compatibility
+  cafeName: {
+    type: String,
+    default: 'My Café'
   },
   businessHours: {
     openingTime: {
@@ -56,7 +110,11 @@ const settingsSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Ensure only one settings document exists
+// Indexes
+settingsSchema.index({ userId: 1 }, { unique: true });
+settingsSchema.index({ gstNumber: 1 });
+
+// Ensure only one settings document exists (legacy method)
 settingsSchema.statics.getSettings = async function() {
   let settings = await this.findOne();
   if (!settings) {

@@ -1,6 +1,151 @@
 const Settings = require('../models/Settings');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const { validationResult } = require('express-validator');
+
+// @desc    Get business settings
+// @route   GET /api/settings/business
+// @access  Private
+const getBusinessSettings = async (req, res, next) => {
+  try {
+    const userId = req.user._id || req.user.id;
+    
+    let settings = await Settings.findOne({ userId });
+    
+    // Create default settings if not exists
+    if (!settings) {
+      settings = await Settings.create({
+        userId,
+        businessName: 'My Business',
+        email: req.user.email || 'info@business.com',
+        phone: 'Not provided',
+        address: 'Not provided yet'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: 'Business settings retrieved successfully',
+      data: settings
+    });
+  } catch (error) {
+    console.error('Error fetching settings:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve settings',
+      errors: [error.message]
+    });
+  }
+};
+
+// @desc    Update business settings
+// @route   PUT /api/settings/business
+// @access  Private
+const updateBusinessSettings = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+    
+    const userId = req.user._id || req.user.id;
+    const {
+      businessName,
+      email,
+      phone,
+      address,
+      gstNumber,
+      logo,
+      planValidity,
+      enableGst,
+      sgstRate,
+      cgstRate
+    } = req.body;
+    
+    const updateData = {
+      businessName,
+      email,
+      phone,
+      address
+    };
+    
+    // Add optional fields only if provided
+    if (gstNumber !== undefined) updateData.gstNumber = gstNumber;
+    if (logo !== undefined) updateData.logo = logo;
+    if (planValidity !== undefined) updateData.planValidity = planValidity;
+    if (enableGst !== undefined) updateData.enableGst = enableGst;
+    if (sgstRate !== undefined) updateData.sgstRate = sgstRate;
+    if (cgstRate !== undefined) updateData.cgstRate = cgstRate;
+    
+    const settings = await Settings.findOneAndUpdate(
+      { userId },
+      updateData,
+      {
+        new: true,
+        upsert: true,
+        runValidators: true
+      }
+    );
+    
+    res.json({
+      success: true,
+      message: 'Business settings updated successfully',
+      data: settings
+    });
+  } catch (error) {
+    console.error('Error updating settings:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update settings',
+      errors: [error.message]
+    });
+  }
+};
+
+// @desc    Upload business logo
+// @route   POST /api/settings/logo
+// @access  Private
+const uploadLogo = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No file uploaded'
+      });
+    }
+    
+    const userId = req.user._id || req.user.id;
+    
+    // Convert to base64
+    const logoBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    
+    // Update settings with logo
+    await Settings.findOneAndUpdate(
+      { userId },
+      { logo: logoBase64 },
+      { upsert: true, new: true }
+    );
+    
+    res.json({
+      success: true,
+      message: 'Logo uploaded successfully',
+      data: {
+        logoBase64
+      }
+    });
+  } catch (error) {
+    console.error('Error uploading logo:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upload logo',
+      errors: [error.message]
+    });
+  }
+};
 
 // @desc    Get settings
 // @route   GET /api/admin/settings
@@ -199,5 +344,8 @@ module.exports = {
   updateSettings,
   getProfile,
   updateProfile,
-  changePassword
+  changePassword,
+  getBusinessSettings,
+  updateBusinessSettings,
+  uploadLogo
 };

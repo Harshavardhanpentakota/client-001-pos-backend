@@ -24,8 +24,8 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' })); // Increased limit for base64 images
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, '../public')));
@@ -42,6 +42,7 @@ app.use('/api/admin/tables', tableRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/cashier', cashierRoutes);
 app.use('/api/admin', settingsRoutes);
+app.use('/api/settings', settingsRoutes); // New settings route
 app.use('/api/admin/analytics', analyticsRoutes);
 
 // Health check route
